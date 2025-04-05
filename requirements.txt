@@ -2,3 +2,4 @@ pandas
 fastapi[standard]
 numpy
 requests
+uvicorn
