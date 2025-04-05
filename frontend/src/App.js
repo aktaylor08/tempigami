@@ -31,12 +31,34 @@ function Controls({ station, setStation }) {
 
 
 }
+
+function Info({ station, unique, last10 }) {
+  return (<div>
+    <h1>{station}</h1>
+    <h2>{unique} temperature combinations</h2>
+    <h2>10 most recent</h2>
+    <table>
+      <tr>
+      <th>Date</th>
+      <th>Low</th>
+      <th>High</th>
+      </tr>
+      {
+        last10.map((item, index) => (
+          <tr key={index}> <td>{item[0]}</td> <td>{item[1]}</td> <td>{item[2]}</td></tr>
+
+        ))}
+      </table>
+
+  </div>)
+}
+
+
 function App() {
   const [station, setStation]= useState("USW00014942")
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  console.log("app " + station);
 
   useEffect(() => {
     axios
@@ -68,10 +90,15 @@ function App() {
   } else {
     const gridData = data['grid'];
     const temps = data['temps']
+    const custom = data['firstlast']
+    const  unique = data['unique']
+    const last10 = data['last10']
+    console.log(last10);
     return (
       <div>
       <Controls station={station} setStation={setStation}/>
-        <Plot data={[{ z: gridData, x: temps, y: temps, type: 'heatmap', colorscale: colorscale, hovertemplate: "Min Temp %{x} <br> Max Temp %{y} Count %{z}" }]} layout={{ xaxis: { title: "hi" }, width: 900, height: 800, }} />
+        <Plot data={[{ z: gridData, x: temps, y: temps, customdata: custom, type: 'heatmap', colorscale: colorscale, hovertemplate: "<extra></extra>Min Temp %{x} <br> Max Temp %{y} <br> Count %{z} <br> First %{customdata[0]} <br> Last: %{customdata[1]}" }]} layout={{ xaxis: { title: "hi" }, width: 900, height: 800, }} />
+        <Info station={station} unique={unique} last10={last10} />
       </div>
     )
   }
