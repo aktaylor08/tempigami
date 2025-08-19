@@ -65,7 +65,8 @@ def parse_to_df(data):
                 qflag = line[start_idx + 6 : start_idx + 7]
                 sflag = line[start_idx + 7 : start_idx + 8]
                 if mflag != " ":
-                    print("MFLAG", value, mflag)
+                    pass
+                    #print("MFLAG", value, mflag)
                 if qflag != " " or value == -9999:
                     value = np.nan
                 data.append(value)
