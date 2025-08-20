@@ -12,7 +12,6 @@ let colorscale = [
     [0.002, 'rgb(31,120,180)'], [0.45, 'rgb(178,223,138)'], [0.65, 'rgb(51,160,44)'], [0.85, 'rgb(251,154,153)'], [1, 'rgb(227,26,28)']
 ];
 
-
 function Controls({ station, setStation }) {
   const [inputValue, setInputValue] = useState(station);
   const handleUpdate = () => {
@@ -30,19 +29,14 @@ function Controls({ station, setStation }) {
       <button onClick={handleUpdate}>Update Requested Station</button>
     </div>
   )
-
-
 }
 
 
-function CircleDrawer({setSearchResults}) {
-  const [circle, setCircle] = useState(null);
+function CircleDrawer({doSearch, circle, setCircle, setSearchResults}) {
   const [isDrawing, setIsDrawing] = useState(false);
   const startLatLng = useRef(null);
-
   useMapEvents({
 	click(e){
-		console.log(e);
 		if(!isDrawing){
 		  startLatLng.current = e.latlng;
           setSearchResults(null);
@@ -52,17 +46,7 @@ function CircleDrawer({setSearchResults}) {
 		  // Finalize circle
 		  setIsDrawing(false);
           const distance = e.latlng.distanceTo(startLatLng.current);
-            axios
-              .get("http://localhost:8000/tempgami/search?lon=" + startLatLng.current.lng + "&lat=" + startLatLng.current.lat + "&dist=" + distance)
-              .then((response) => {
-                console.log("hi (good)")
-                setSearchResults(response.data);
-                setCircle(null);
-              })
-              .catch((error) => {
-                console.log("hi (bad)")
-                setSearchResults(null);
-              });
+          doSearch(startLatLng.current.lng, startLatLng.current.lat, distance);
 		  startLatLng.current = null;	
 		}
 	},
@@ -83,22 +67,6 @@ function CircleDrawer({setSearchResults}) {
   ) : null;
 }
 
-function create(name, id, setStation) {
-    let div = document.createElement('div')
-    let p = document.createElement('p')
-    p.textContent= name + " " + id;
-    div.appendChild(p)
-    let _button = document.createElement("button");
-    _button.data = "hi";
-    _button.innerHTML = 'click me';
-    _button.onclick = function()
-    {
-                alert("hello, world");
-    }
-    div.appendChild(_button);
-    return div;
-
-}
 
 function CurrentStation({station_info}){
     console.log(station_info)
@@ -110,13 +78,33 @@ function CurrentStation({station_info}){
     </Marker> : null;
 }
 
-    function onEachFeature(feature, layer) {
+
+function Stations({searchResults,  setSearchResults, setStation}){
+    console.log(searchResults);
+    console.log('hiyo', setStation);
+    const create = (name, id) => {
+        let div = document.createElement('div')
+        let p = document.createElement('p')
+        p.textContent= name + " " + id;
+        div.appendChild(p)
+        let _button = document.createElement("button");
+        _button.data = "hi";
+        _button.innerHTML = 'Use this station';
+        _button.onclick = function()
+        {
+                    setSearchResults(null);
+                    setStation(id);
+
+        }
+        div.appendChild(_button);
+        return div;
+
+    }
+    const onEachFeature = (feature, layer) => {
             if (feature.properties && feature.properties.name) {
                     layer.bindPopup(create(feature.properties.name, feature.properties.id))
                 }
     }
-
-function Stations({searchResults}){
     if(searchResults != null){
         return <GeoJSON data={searchResults} onEachFeature={onEachFeature} />
     }else{
@@ -145,6 +133,23 @@ function SimpleMap({station_info, setStation}) {
       const [gsnSearch, setGsnSearch] = useState(false)
       const [hcncrnSearch, setHcncrnSearch] = useState(false)
       const [othersSearch, setOthersSearch] = useState(false)
+      const [circle, setCircle] = useState(null);
+      const doSearch = (lon, lat, dist) =>{
+        console.log("Starting dat search");
+            axios
+              .get("http://localhost:8000/tempgami/search?lon=" + lon + "&lat=" + lat + "&dist=" + dist + "&wmo=" + wmoSearch + "&gsn=" + gsnSearch + "&hcncrn=" + hcncrnSearch + "&others=" +othersSearch)
+              .then((response) => {
+                console.log("hi (good)")
+                setSearchResults(response.data);
+                setCircle(null);
+              })
+              .catch((error) => {
+                console.log("hi (bad)")
+                setSearchResults(null);
+              });
+
+       }
+    console.log("Po", setStation);
       return ( 
             // Make sure you set the height and width of the map container otherwise the map won't show
         <div>
@@ -153,8 +158,8 @@ function SimpleMap({station_info, setStation}) {
       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-    <CircleDrawer setSearchResults={setSearchResults}/>
-    <Stations searchResults={searchResults}/>
+    <CircleDrawer doSearch={doSearch} circle={circle} setCircle={setCircle} setSearchResults={setSearchResults}/>
+    <Stations searchResults={searchResults} setStation={setStation} setSearchResults={setSearchResults}/>
 	<CurrentStation station_info={station_info}/>
       </MapContainer>
     <Checkbox label="WMO" value={wmoSearch} setValue={setWmoSearch}/>
@@ -167,13 +172,14 @@ function SimpleMap({station_info, setStation}) {
 
 
 
-function Info({ station_info, unique, last10, total }) {
+function Info({ station_info, unique, last10, total, start,end}) {
 console.log(station_info)
   return (<div>
     <h1>{station_info.name} - {station_info.id} </h1>
     <h2> {station_info.lon} {station_info.lat}</h2>
     <h2>{unique} unique temperature combinations</h2>
     <h2>{total} Days total {total / 365.0} years  </h2>
+    <h2>From {start} to {end}</h2>
     <h2>10 most recent</h2>
     <table>
       <tr>
@@ -217,7 +223,7 @@ function App() {
     return(
       <div>
       <Controls station={station} setStation={setStation}/>
-      <SimpleMap station_info={null} set_station={setStation} />
+      <SimpleMap station_info={null} setStation={setStation} />
         <p>{error}</p>
       </div>
     )
@@ -225,7 +231,7 @@ function App() {
   } else if(data === null){
       <div>
       <Controls station={station} setStation={setStation}/>
-      <SimpleMap station_info={null} set_station={setStation} />
+      <SimpleMap station_info={null} setStation={setStation} />
       </div>
 
   } else {
@@ -236,12 +242,14 @@ function App() {
     const last10 = data['last10']
     const total = data['count']
     const station_info = data['stationInfo']
+    const sd = data['startDate']
+    const ed = data['endDate']
     return (
       <div>
       <Controls station={station} setStation={setStation}/>
       <Plot data={[{ z: gridData, x: temps, y: temps, customdata: custom, type: 'heatmap', colorscale: colorscale, hovertemplate: "<extra></extra>Min Temp %{x} <br> Max Temp %{y} <br> Count %{z} <br> First %{customdata[0]} <br> Last: %{customdata[1]}" }]} layout={{ xaxis: { title: "hi" }, width: 900, height: 800, }} />
-      <SimpleMap station_info={station_info} set_station={setStation} />
-      <Info station_info={station_info} unique={unique} last10={last10} total={total}/>
+      <SimpleMap station_info={station_info} setStation={setStation} />
+      <Info station_info={station_info} unique={unique} last10={last10} total={total} start={sd} end={ed}/>
       </div>
     )
   }

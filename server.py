@@ -24,8 +24,18 @@ app.mount("/static", StaticFiles(directory="frontend/build/static"), name="stati
 
 
 @app.get('/tempgami/search')
-def station_search(lon: float, lat: float, dist: float):
-    return {"type": "FeatureCollection", "features": [x.to_geo_json() for x in search(lon, lat, dist)]}
+def station_search(lon: float, lat: float, dist: float, wmo: bool, gsn: bool, hcncrn: bool, others: bool):
+    rets = []
+    for x in search(lon, lat, dist):
+        if wmo and x.wmo:
+            rets.append(x)
+        elif gsn and x.gsn:
+            rets.append(x)
+        elif hcncrn and x.hcn_crn:
+            rets.append(x)
+        elif others:
+            rets.append(x)
+    return {"type": "FeatureCollection", "features": [x.to_geo_json() for x in rets]}
 
 @app.get("/tempgami/{station}")
 def get_data(station: str):
