@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from parse_daily import get_stations_data, parse_to_df
 from stations import Station, get_station_info, search
@@ -8,8 +7,9 @@ import numpy as np
 
 
 origins = [
+    "http://localhost:80",  # React development server
     "http://localhost:3000",  # React development server
-    "http://yourfrontend.com",  # Your deployed frontend URL
+    "https://apps.aktcode.com",  # Your deployed frontend URL
 ]
 
 app = FastAPI()
@@ -20,7 +20,6 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
-app.mount("/static", StaticFiles(directory="frontend/build/static"), name="static")
 
 
 @app.get('/tempgami/search')
@@ -91,9 +90,3 @@ def get_data(station: str):
 
     # Defines a route handler for `/*` essentially.
 
-
-@app.get("/{full_path:path}")
-async def serve_react_app(full_path: str):
-    print(full_path)
-    index_path = "frontend/build/index.html"
-    return FileResponse(index_path)

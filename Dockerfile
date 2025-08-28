@@ -1,11 +1,6 @@
-FROM node AS nodebuild
-ADD frontend/ /tmp/frontend
-WORKDIR /tmp/frontend
-RUN npm install && npm run build
 FROM python:3.12-alpine AS app
 RUN mkdir /app
 WORKDIR  /app
-COPY --from=nodebuild /tmp/frontend/build /app/frontend/build
 ADD server.py /app
 ADD parse_daily.py  /app
 ADD requirements.txt /app
