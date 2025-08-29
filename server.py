@@ -22,7 +22,7 @@ app.add_middleware(
 )
 
 
-@app.get('/tempgami/search')
+@app.get('/api/tempgami/search')
 def station_search(lon: float, lat: float, dist: float, wmo: bool, gsn: bool, hcncrn: bool, others: bool):
     rets = []
     for x in search(lon, lat, dist):
@@ -36,7 +36,7 @@ def station_search(lon: float, lat: float, dist: float, wmo: bool, gsn: bool, hc
             rets.append(x)
     return {"type": "FeatureCollection", "features": [x.to_geo_json() for x in rets]}
 
-@app.get("/tempgami/{station}")
+@app.get("/api/tempgami/{station}")
 def get_data(station: str):
     data = get_stations_data(station)
     df = parse_to_df(data)

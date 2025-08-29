@@ -1,0 +1,28 @@
+services:
+  redis:
+    image: 'redis:latest'
+    ports:
+      - '6379:6379'
+  temp-proxy:
+    image: temp-proxy
+    build:
+      context: .
+      dockerfile: Dockerfile.proxy
+    ports:
+      - '80:80'
+  api:
+    image: api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8000:8000'
+  frontend:
+    image: frontend 
+    build:
+      context: .
+      dockerfile: Dockerfile.front
+    ports:
+      - '81:80'
+
+

@@ -4,9 +4,11 @@ import shapely
 from pydantic import BaseModel
 import json
 import redis
+import os
 
+redis_host = os.environ.get('REDIS_HOST', 'redis')
 
-r = redis.Redis(host='localhost', port=6379, decode_responses=True)
+r = redis.Redis(host=redis_host, port=6379, decode_responses=True)
 class Station(BaseModel):
     id: str
     lon: float

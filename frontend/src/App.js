@@ -137,9 +137,8 @@ function SimpleMap({station_info, setStation}) {
       const doSearch = (lon, lat, dist) =>{
         console.log("Starting dat search");
             axios
-              .get("http://localhost:8000/tempgami/search?lon=" + lon + "&lat=" + lat + "&dist=" + dist + "&wmo=" + wmoSearch + "&gsn=" + gsnSearch + "&hcncrn=" + hcncrnSearch + "&others=" +othersSearch)
+              .get("http://localhost:80/api/tempgami/search?lon=" + lon + "&lat=" + lat + "&dist=" + dist + "&wmo=" + wmoSearch + "&gsn=" + gsnSearch + "&hcncrn=" + hcncrnSearch + "&others=" +othersSearch)
               .then((response) => {
-                console.log("hi (good)")
                 setSearchResults(response.data);
                 setCircle(null);
               })
@@ -153,7 +152,7 @@ function SimpleMap({station_info, setStation}) {
       return ( 
             // Make sure you set the height and width of the map container otherwise the map won't show
         <div>
-       <MapContainer center={[latitude, longitude]} zoom={2} ref={mapRef} style={{height: "35vh", width: "50vw"}}>
+       <MapContainer center={[latitude, longitude]} zoom={2} ref={mapRef} style={{height: "600px", width: "800px"}}>
       <TileLayer
       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -176,20 +175,20 @@ function Info({ station_info, unique, last10, total, start,end}) {
 console.log(station_info)
   return (<div>
     <h1>{station_info.name} - {station_info.id} </h1>
-    <h2> {station_info.lon} {station_info.lat}</h2>
+    <h2>{start}   ->    {end}</h2>
     <h2>{unique} unique temperature combinations</h2>
-    <h2>{total} Days total {total / 365.0} years  </h2>
-    <h2>From {start} to {end}</h2>
-    <h2>10 most recent</h2>
+    <h2>{total} Days | {total / 365.0} years  </h2>
+    <h2> Lon: {station_info.lon} Lat: {station_info.lat}</h2>
+    <h2>10 most recent tempgamis</h2>
     <table>
       <tr>
-      <th>Date</th>
       <th>Low</th>
       <th>High</th>
+      <th>Date</th>
       </tr>
       {
         last10.map((item, index) => (
-          <tr key={index}> <td>{item[0]}</td> <td>{item[1]}</td> <td>{item[2]}</td></tr>
+          <tr key={index}> <td>{item[1]}</td> <td>{item[2]}</td> <td>{item[0]}</td> </tr>
 
         ))}
       </table>
@@ -207,7 +206,7 @@ function App() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/tempgami/" + station)
+      .get("http://localhost:80/api/tempgami/" + station)
       .then((response) => {
         setData(response.data);
         setError(null);
@@ -247,9 +246,9 @@ function App() {
     return (
       <div>
       <Controls station={station} setStation={setStation}/>
-      <Plot data={[{ z: gridData, x: temps, y: temps, customdata: custom, type: 'heatmap', colorscale: colorscale, hovertemplate: "<extra></extra>Min Temp %{x} <br> Max Temp %{y} <br> Count %{z} <br> First %{customdata[0]} <br> Last: %{customdata[1]}" }]} layout={{ xaxis: { title: "hi" }, width: 900, height: 800, }} />
-      <SimpleMap station_info={station_info} setStation={setStation} />
+      <Plot data={[{ z: gridData, x: temps, y: temps, customdata: custom, type: 'heatmap', colorscale: colorscale, hovertemplate: "<extra></extra>Min Temp %{x} <br> Max Temp %{y} <br> Count %{z} <br> First %{customdata[0]} <br> Last: %{customdata[1]}" }]} layout={{ xaxis: { title: "hi" }, width: 800, height: 800, }} />
       <Info station_info={station_info} unique={unique} last10={last10} total={total} start={sd} end={ed}/>
+      <SimpleMap station_info={station_info} setStation={setStation} />
       </div>
     )
   }
