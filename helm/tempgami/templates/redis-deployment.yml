@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis 
+  labels:
+    app: redis 
+spec:
+  replicas: {{ .Values.redis.deployment.replicaCount }} 
+  selector:
+    matchLabels:
+      app: redis 
+  template:
+    metadata:
+      labels:
+        app: redis 
+    spec:
+      containers:
+      - name: redis 
+        image: {{ .Values.redis.deployment.image }} 
+        imagePullPolicy: {{ .Values.imagePullPolicy }} 
+        volumeMounts:
+            - name: data
+              mountPath: /data
+              readOnly: false
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: redis-pvc 
+      
+
+        

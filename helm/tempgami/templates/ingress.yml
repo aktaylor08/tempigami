@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tempgami-ingress 
+spec:
+  ingressClassName: {{ ingress.class }}
+  rules:
+  - host: {{ ingress.hostName }} 
+    http:
+      paths:
+      - backend:
+          service:
+            name: api
+            port:
+              number: 8000
+        path: /api
+        pathType: Prefix
+      - backend:
+          service:
+            name: frontend
+            port:
+              number: 9000
+        path: /
+        pathType: Prefix
