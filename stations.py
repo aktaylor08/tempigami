@@ -57,6 +57,12 @@ def search(lon, lat, dist, unit='m') -> list[Station]:
     result = [Station.from_geojson(json.loads(r.get(f"station:info:{x}"))) for x in res]
     return result
 
+def check_cache(station, time_key) -> str:
+    return r.get(f"cache:{time_key}:{station}")
+
+def save_cache(station, time_key, data) -> str:
+    r.set(f"cache:{time_key}:{station}", data, ex=60 * 60 * 12)
+
 
 
 if __name__ == "__main__":
