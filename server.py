@@ -95,8 +95,9 @@ def get_data(station: str):
             "count": count,
             "startDate": start_date,
             "endDate": end_date,
-            "stationInfo": get_station_info(station) 
+            "stationInfo": get_station_info(station).model_dump()
         }
+
         save_cache(station, time_key, json.dumps(ret, default=str))
     else:
         ret = json.loads(cache_val)
