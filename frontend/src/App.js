@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import "./App.css";
 import Plot from "react-plotly.js";
 import axios from "axios";
@@ -12,10 +13,11 @@ let colorscale = [
     [0.002, 'rgb(31,120,180)'], [0.45, 'rgb(178,223,138)'], [0.65, 'rgb(51,160,44)'], [0.85, 'rgb(251,154,153)'], [1, 'rgb(227,26,28)']
 ];
 
-function Controls({ station, setStation }) {
+function Controls({ station }) {
+    const nav = useNavigate()
   const [inputValue, setInputValue] = useState(station);
   const handleUpdate = () => {
-    setStation(inputValue);
+        nav("/" + inputValue)
   };
   return(
     <div>
@@ -69,7 +71,6 @@ function CircleDrawer({doSearch, circle, setCircle, setSearchResults}) {
 
 
 function CurrentStation({station_info}){
-    console.log(station_info)
     return station_info ? 
     <Marker position={[station_info.lat, station_info.lon]}>
     <Popup>
@@ -79,9 +80,8 @@ function CurrentStation({station_info}){
 }
 
 
-function Stations({searchResults,  setSearchResults, setStation}){
-    console.log(searchResults);
-    console.log('hiyo', setStation);
+function Stations({searchResults,  setSearchResults}){
+    const nav = useNavigate()
     const create = (name, id) => {
         let div = document.createElement('div')
         let p = document.createElement('p')
@@ -93,7 +93,7 @@ function Stations({searchResults,  setSearchResults, setStation}){
         _button.onclick = function()
         {
                     setSearchResults(null);
-                    setStation(id);
+                    nav("/" + id)
 
         }
         div.appendChild(_button);
@@ -110,7 +110,6 @@ function Stations({searchResults,  setSearchResults, setStation}){
     }else{
         return null;
     }
-    console.log(searchResults);
 
 }
 
@@ -124,7 +123,7 @@ return (
 }
 
 
-function SimpleMap({station_info, setStation}) {
+function SimpleMap({station_info}) {
       const mapRef = useRef(null);
       const latitude = 0.0;
       const longitude = 0.0;
@@ -135,20 +134,17 @@ function SimpleMap({station_info, setStation}) {
       const [othersSearch, setOthersSearch] = useState(false)
       const [circle, setCircle] = useState(null);
       const doSearch = (lon, lat, dist) =>{
-        console.log("Starting dat search");
             axios
-              .get("/api/tempgami/search?lon=" + lon + "&lat=" + lat + "&dist=" + dist + "&wmo=" + wmoSearch + "&gsn=" + gsnSearch + "&hcncrn=" + hcncrnSearch + "&others=" +othersSearch)
+              .get("http://localhost:8000/api/tempgami/search?lon=" + lon + "&lat=" + lat + "&dist=" + dist + "&wmo=" + wmoSearch + "&gsn=" + gsnSearch + "&hcncrn=" + hcncrnSearch + "&others=" +othersSearch)
               .then((response) => {
                 setSearchResults(response.data);
                 setCircle(null);
               })
               .catch((error) => {
-                console.log("hi (bad)")
                 setSearchResults(null);
               });
 
        }
-    console.log("Po", setStation);
       return ( 
             // Make sure you set the height and width of the map container otherwise the map won't show
         <div>
@@ -158,7 +154,7 @@ function SimpleMap({station_info, setStation}) {
       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
     <CircleDrawer doSearch={doSearch} circle={circle} setCircle={setCircle} setSearchResults={setSearchResults}/>
-    <Stations searchResults={searchResults} setStation={setStation} setSearchResults={setSearchResults}/>
+    <Stations searchResults={searchResults} setSearchResults={setSearchResults}/>
 	<CurrentStation station_info={station_info}/>
       </MapContainer>
     <Checkbox label="WMO" value={wmoSearch} setValue={setWmoSearch}/>
@@ -172,7 +168,6 @@ function SimpleMap({station_info, setStation}) {
 
 
 function Info({ station_info, unique, last10, total, start,end}) {
-console.log(station_info)
   return (<div>
     <h1>{station_info.name} - {station_info.id} </h1>
     <h2>{start}   ->    {end}</h2>
@@ -199,14 +194,14 @@ console.log(station_info)
 
 
 function App() {
-  const [station, setStation]= useState("USW00014942")
+  const station =  useLocation().pathname.substring(1);
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     axios
-      .get("/api/tempgami/" + station)
+      .get("http://localhost:8000/api/tempgami/" + station)
       .then((response) => {
         setData(response.data);
         setError(null);
@@ -221,16 +216,16 @@ function App() {
   if (error != null) {
     return(
       <div>
-      <Controls station={station} setStation={setStation}/>
-      <SimpleMap station_info={null} setStation={setStation} />
+      <Controls key={station} station={station} />
+      <SimpleMap station_info={null}  />
         <p>{error}</p>
       </div>
     )
 
   } else if(data === null){
       <div>
-      <Controls station={station} setStation={setStation}/>
-      <SimpleMap station_info={null} setStation={setStation} />
+      <Controls station={station}/>
+      <SimpleMap station_info={null}  />
       </div>
 
   } else {
@@ -245,10 +240,10 @@ function App() {
     const ed = data['endDate']
     return (
       <div>
-      <Controls station={station} setStation={setStation}/>
+      <Controls station={station} />
       <Plot data={[{ z: gridData, x: temps, y: temps, customdata: custom, type: 'heatmap', colorscale: colorscale, hovertemplate: "<extra></extra>Min Temp %{x} <br> Max Temp %{y} <br> Count %{z} <br> First %{customdata[0]} <br> Last: %{customdata[1]}" }]} layout={{ xaxis: { title: "hi" }, width: 800, height: 800, }} />
       <Info station_info={station_info} unique={unique} last10={last10} total={total} start={sd} end={ed}/>
-      <SimpleMap station_info={station_info} setStation={setStation} />
+      <SimpleMap station_info={station_info}  />
       </div>
     )
   }
