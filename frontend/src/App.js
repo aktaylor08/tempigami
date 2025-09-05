@@ -135,7 +135,7 @@ function SimpleMap({station_info}) {
       const [circle, setCircle] = useState(null);
       const doSearch = (lon, lat, dist) =>{
             axios
-              .get("http://localhost:8000/api/tempgami/search?lon=" + lon + "&lat=" + lat + "&dist=" + dist + "&wmo=" + wmoSearch + "&gsn=" + gsnSearch + "&hcncrn=" + hcncrnSearch + "&others=" +othersSearch)
+              .get("/api/tempgami/search?lon=" + lon + "&lat=" + lat + "&dist=" + dist + "&wmo=" + wmoSearch + "&gsn=" + gsnSearch + "&hcncrn=" + hcncrnSearch + "&others=" +othersSearch)
               .then((response) => {
                 setSearchResults(response.data);
                 setCircle(null);
@@ -201,7 +201,7 @@ function App() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/tempgami/" + station)
+      .get("/api/tempgami/" + station)
       .then((response) => {
         setData(response.data);
         setError(null);
