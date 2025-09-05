@@ -17,7 +17,7 @@ function Controls({ station }) {
     const nav = useNavigate()
   const [inputValue, setInputValue] = useState(station);
   const handleUpdate = () => {
-        nav("/" + inputValue)
+        nav("/station/" + inputValue)
   };
   return(
     <div>
@@ -93,7 +93,7 @@ function Stations({searchResults,  setSearchResults}){
         _button.onclick = function()
         {
                     setSearchResults(null);
-                    nav("/" + id)
+                    nav("/station/" + id)
 
         }
         div.appendChild(_button);
@@ -221,6 +221,7 @@ function Information({show_intro}) {
         <li><strong>Click and drag</strong> on the map to select an area and search for stations.</li>
         <li>Use the checkboxes at the bottom to toggle which networks are included.</li>
         <li>Only stations with temperature data are shown. Selecting <em>Other</em> provides the widest station selection.</li>
+        <li>Only 1,000 stations are returned from the search and it is not going to be the same stations each time, so if you can't find the one you are looking for, try zooming in</li>
       </ul>
     </section>
         </div>
@@ -237,27 +238,41 @@ function Information({show_intro}) {
 
 
 function App() {
-  const station =  useLocation().pathname.substring(1);
+  const path=  useLocation().pathname.split("/")
+  let station = "";
+  if(path.length == 3){
+    station = path[2];
+  }
+  console.log("DAS STATION:", station)
   const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+console.log("Loading", loading)
 
 
   useEffect(() => {
-    axios
-      .get("/api/tempgami/" + station)
-      .then((response) => {
-        setData(response.data);
+        (async () => {
+    if(station != ""){
+        try{
+           setLoading(true);
+           const result  = await axios .get("/api/tempgami/" + station)
+            setData(result.data);
+            setError(null)
+        }catch{
+            setData(null);
+            setError(error.message);
+        }finally{
+            setLoading(false);
+        }
+    }else{
+        setData(null);
         setError(null);
         setLoading(false);
-      })
-      .catch((error) => {
-        setData(null);
-        setError(error.message);
-        setLoading(false);
-      });
+    }
+    })();
   }, [station]);
-  if (error != null) {
+  
+  if (error != null || station == "") {
     return(
       <div>
       <Information show_intro={true}/>
@@ -267,12 +282,15 @@ function App() {
       </div>
     )
 
-  } else if(data === null){
+  } else if(data === null || loading){
+        return(
       <div>
-      <Information show_intro={true}/>
+      <Information show_intro={false}/>
       <Controls station={station}/>
+      <div style={{"height": 800, "width": 800}}><h1>Loading Graph</h1></div>
+      <div style={{"height": 800, "width": 800}}><h1>Loading information</h1></div>
       <SimpleMap station_info={null}  />
-      </div>
+      </div>)
 
   } else {
     const gridData = data['grid'];
@@ -288,7 +306,7 @@ function App() {
       <div>
       <Information show_intro={false}/>
       <Controls station={station} />
-      <Plot data={[{ z: gridData, x: temps, y: temps, customdata: custom, type: 'heatmap', colorscale: colorscale, hovertemplate: "<extra></extra>Min Temp %{x} <br> Max Temp %{y} <br> Count %{z} <br> First %{customdata[0]} <br> Last: %{customdata[1]}" }]} layout={{ xaxis: { title: "hi" }, width: 800, height: 800, }} />
+      <Plot data={[{ z: gridData, x: temps, y: temps, customdata: custom, type: 'heatmap', colorscale: colorscale, hovertemplate: "<extra></extra>Min Temp %{x} <br> Max Temp %{y} <br> Count %{z} <br> First %{customdata[0]} <br> Last: %{customdata[1]}" }]} layout={{ xaxis: { title: "hi" }, width: 800, height: 800, }} />nnG
       <Info station_info={station_info} unique={unique} last10={last10} total={total} start={sd} end={ed}/>
       <SimpleMap station_info={station_info}  />
       </div>
