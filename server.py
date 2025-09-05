@@ -45,6 +45,8 @@ def station_search(lon: float, lat: float, dist: float, wmo: bool, gsn: bool, hc
 
 @app.get("/api/tempgami/{station}")
 def get_data(station: str):
+    if station == "undefined":
+        raise ValueError()
     time_key = version
     cache_val = check_cache(station, time_key)
     if not cache_val:
