@@ -53,7 +53,7 @@ def get_station_info(id: str) -> Station | None:
     return None
 
 def search(lon, lat, dist, unit='m') -> list[Station]:
-    res = r.geosearch("station:locations", unit=unit, radius=dist, longitude=lon, latitude=lat)
+    res = r.geosearch("station:locations", unit=unit, radius=dist, longitude=lon, latitude=lat, count=1000, any=True)
     result = [Station.from_geojson(json.loads(r.get(f"station:info:{x}"))) for x in res]
     return result
 
