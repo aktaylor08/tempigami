@@ -197,15 +197,32 @@ function Information({show_intro}) {
     if (show_intro){
     return <div>
     <h2> Tempigami </h2>
-    <p>Welcome to tempigami. Inspired by the nfl scorigami and making use of the Global Historical Climatology Network. 
-    Select a station from the big list or browse and find one on the map.  Once the graph appears the bottom axis is the low
-        temperature and the side axis is high temperature.  Every high/low temperature combination that has been recorded there
-        will be in the graph along with information about the first and last time and number of times it's happened.
-        </p>
-        <p>
-        Click and drag to search an area for stations.  You can toggle which networks to search with the check boxes at the bottom.
-        Only stations with temperatures should be included, so selected other gives you the largest selection of stations.
-        </p>
+      <header>
+      <h1>Welcome to Tempigami</h1>
+      <p>Discover unique high/low temperature combinations recorded at weather stations around the world.</p>
+      <p><em>Inspired by NFL Scorigami · Powered by The Global Historical Climatology Network</em></p>
+    </header>
+
+    <section>
+      <h4>Getting started</h4>
+      <p>
+        Choose a station from the list—or pan and zoom the map to find one. Once selected, a graph appears:
+      </p>
+      <ul>
+        <li>The <strong>x-axis</strong> shows daily low temperatures.</li>
+        <li>The <strong>y-axis</strong> shows daily high temperatures.</li>
+        <li>Each point marks a recorded high/low combination for that station, including the first occurrence, most recent occurrence, and total count.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h4>Map tools</h4>
+      <ul>
+        <li><strong>Click and drag</strong> on the map to select an area and search for stations.</li>
+        <li>Use the checkboxes at the bottom to toggle which networks are included.</li>
+        <li>Only stations with temperature data are shown. Selecting <em>Other</em> provides the widest station selection.</li>
+      </ul>
+    </section>
         </div>
     }else{
         return (
