@@ -67,9 +67,17 @@ def save_cache(station, time_key, data) -> str:
 
 if __name__ == "__main__":
     stations = []
-
-    with open("ghcnd-stations.txt") as f:
-        for line in f:
+    import requests
+    inventory = requests.get("https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-inventory.txt").text.split('\n')
+    stations = requests.get("https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt").text.split('\n')
+    stations_idx = 0
+    print("Starting")
+    for inv in inventory:
+        if inv != '' and inv.split()[3] == 'TMAX':
+            station_name = inv.split()[0] 
+            while not stations[stations_idx].startswith(station_name):
+                stations_idx += 1
+            line = stations[stations_idx]
             id = line[0:11]
             lat = float(line[11:20])
             lon = float(line[21:30])
