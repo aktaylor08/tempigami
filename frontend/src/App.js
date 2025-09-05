@@ -192,12 +192,39 @@ function Info({ station_info, unique, last10, total, start,end}) {
 }
  
 
+function Information({show_intro}) {
+    console.log("hi");
+    if (show_intro){
+    return <div>
+    <h2> Tempigami </h2>
+    <p>Welcome to tempigami. Inspired by the nfl scorigami and making use of the Global Historical Climatology Network. 
+    Select a station from the big list or browse and find one on the map.  Once the graph appears the bottom axis is the low
+        temperature and the side axis is high temperature.  Every high/low temperature combination that has been recorded there
+        will be in the graph along with information about the first and last time and number of times it's happened.
+        </p>
+        <p>
+        Click and drag to search an area for stations.  You can toggle which networks to search with the check boxes at the bottom.
+        Only stations with temperatures should be included, so selected other gives you the largest selection of stations.
+        </p>
+        </div>
+    }else{
+        return (
+        <div>
+            <h2> Tempigami </h2>
+        </div>
+        )
+    }
+
+
+}
+
 
 function App() {
   const station =  useLocation().pathname.substring(1);
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
 
   useEffect(() => {
     axios
@@ -216,6 +243,7 @@ function App() {
   if (error != null) {
     return(
       <div>
+      <Information show_intro={true}/>
       <Controls key={station} station={station} />
       <SimpleMap station_info={null}  />
         <p>{error}</p>
@@ -224,6 +252,7 @@ function App() {
 
   } else if(data === null){
       <div>
+      <Information show_intro={true}/>
       <Controls station={station}/>
       <SimpleMap station_info={null}  />
       </div>
@@ -240,6 +269,7 @@ function App() {
     const ed = data['endDate']
     return (
       <div>
+      <Information show_intro={false}/>
       <Controls station={station} />
       <Plot data={[{ z: gridData, x: temps, y: temps, customdata: custom, type: 'heatmap', colorscale: colorscale, hovertemplate: "<extra></extra>Min Temp %{x} <br> Max Temp %{y} <br> Count %{z} <br> First %{customdata[0]} <br> Last: %{customdata[1]}" }]} layout={{ xaxis: { title: "hi" }, width: 800, height: 800, }} />
       <Info station_info={station_info} unique={unique} last10={last10} total={total} start={sd} end={ed}/>
